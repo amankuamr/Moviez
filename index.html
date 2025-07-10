@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moviez - Trending Movies</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="header-inner">
+            <div class="logo-title">
+                <span class="logo-icon">🎬</span>
+                <span class="logo-text">Moviez</span>
+            </div>
+            <form id="search-form">
+                <div class="search-input-wrapper">
+                    <input type="text" id="search-input" placeholder="Search for movies..." autocomplete="off">
+                    <button type="button" id="search-clear" title="Clear search" style="display:none;">&times;</button>
+                </div>
+                <button type="submit">Search</button>
+            </form>
+        </div>
+    </header>
+    <main>
+        <section id="home-carousel">
+            <h2>Today's Picks</h2>
+            <div class="carousel-wrapper">
+                <button class="carousel-arrow left" id="carousel-left">&#8592;</button>
+                <div class="carousel" id="carousel-list"></div>
+                <button class="carousel-arrow right" id="carousel-right">&#8594;</button>
+            </div>
+        </section>
+        <section id="trending">
+            <h2>Trending Movies</h2>
+            <div class="filter-bar">
+                <select id="filter-year">
+                    <option value="">Year</option>
+                </select>
+                <select id="filter-rating">
+                    <option value="">Min Rating</option>
+                    <option value="9">9+</option>
+                    <option value="8">8+</option>
+                    <option value="7">7+</option>
+                    <option value="6">6+</option>
+                    <option value="5">5+</option>
+                </select>
+                <select id="filter-language">
+                    <option value="">Language</option>
+                </select>
+                <button id="filter-apply">Apply</button>
+                <button id="filter-clear" type="button">Clear</button>
+            </div>
+            <div class="movie-list" id="trending-list"></div>
+        </section>
+        <section id="top-people">
+            <h2>Top Actors &amp; Actresses</h2>
+            <div class="people-bar-wrapper">
+                <button class="people-arrow left" id="people-left">&#8592;</button>
+                <div class="people-bar" id="people-list"></div>
+                <button class="people-arrow right" id="people-right">&#8594;</button>
+            </div>
+        </section>
+        <section id="popular-anime">
+            <h2>Popular Cartoons</h2>
+            <div class="anime-bar-wrapper">
+                <button class="anime-arrow left" id="anime-left">&#8592;</button>
+                <div class="anime-bar" id="anime-list"></div>
+                <button class="anime-arrow right" id="anime-right">&#8594;</button>
+            </div>
+        </section>
+        <section id="user-trending">
+            <h2>Trending by Genre</h2>
+            <div class="genre-filters">
+                <button data-genre="Action">Action</button>
+                <button data-genre="Comedy">Comedy</button>
+                <button data-genre="Drama">Drama</button>
+                <button data-genre="Horror">Horror</button>
+                <button data-genre="Sci-Fi">Sci-Fi</button>
+            </div>
+            <div class="movie-list" id="genre-list"></div>
+        </section>
+        <section id="popular-series">
+            <h2>Popular Series</h2>
+            <div class="series-filter-bar filter-bar">
+                <select id="series-filter-year">
+                    <option value="">Year</option>
+                </select>
+                <select id="series-filter-rating">
+                    <option value="">Min Rating</option>
+                    <option value="9">9+</option>
+                    <option value="8">8+</option>
+                    <option value="7">7+</option>
+                    <option value="6">6+</option>
+                    <option value="5">5+</option>
+                </select>
+                <select id="series-filter-language">
+                    <option value="">Language</option>
+                </select>
+                <button id="series-filter-apply">Apply</button>
+                <button id="series-filter-clear" type="button">Clear</button>
+            </div>
+            <div class="movie-list" id="series-list"></div>
+        </section>
+    </main>
+    <footer>
+        <p>Made with ❤️ by Aman Kumar</p>
+    </footer>
+    <script src="app.js"></script>
+
+    <!-- Movie Details Modal -->
+    <div id="movie-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="modal-body" class="modal-body-flex"></div>
+        </div>
+    </div>
+</body>
+</html>
