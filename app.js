@@ -71,6 +71,20 @@ function renderCarousel(movies) {
 }
 
 // Render movie cards
+function showSkeletons(container, count = 6) {
+    let skeletons = '';
+    for (let i = 0; i < count; i++) {
+        skeletons += `
+        <div class="skeleton-card">
+            <div class="skeleton-img"><div class="skeleton-shimmer"></div></div>
+            <div class="skeleton-line long"><div class="skeleton-shimmer"></div></div>
+            <div class="skeleton-line short"><div class="skeleton-shimmer"></div></div>
+            <div class="skeleton-line medium"><div class="skeleton-shimmer"></div></div>
+        </div>`;
+    }
+    container.innerHTML = skeletons;
+}
+
 function renderMovies(movies, container) {
     container.innerHTML = '';
     if (!movies || movies.length === 0) {
@@ -101,6 +115,8 @@ function renderMovies(movies, container) {
 
 // Load and display trending movies (default or after clearing filters)
 async function loadTrendingMovies(genreMap) {
+    const container = document.getElementById('trending-list');
+    showSkeletons(container);
     const data = await fetchTrendingMovies();
     let movies = data.results.slice(0, 10);
     // Map genre IDs to names
@@ -108,7 +124,7 @@ async function loadTrendingMovies(genreMap) {
         ...m,
         genre_names: m.genre_ids.map(id => genreMap[id]).filter(Boolean)
     }));
-    renderMovies(movies, document.getElementById('trending-list'));
+    renderMovies(movies, container);
 }
 
 // Helper to fetch now playing movies (today's picks)
@@ -354,6 +370,8 @@ async function setupSeriesFilterBar() {
 
 // Load and display popular series
 async function loadPopularSeries(genreMap, filters = {}) {
+    const container = document.getElementById('series-list');
+    showSkeletons(container);
     let series;
     if (filters.year || filters.rating || filters.language) {
         const data = await fetchSeriesWithFilters(filters);
