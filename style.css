@@ -176,6 +176,41 @@ section h2 {
 #home-carousel {
     margin-bottom: 2.5rem;
 }
+.today-picks-row {
+    display: flex;
+    flex-direction: row;
+    gap: 2.5rem;
+    align-items: flex-start;
+    width: 100%;
+}
+.top-reviewed-trailer {
+    flex: 0 0 420px;
+    max-width: 420px;
+    min-width: 320px;
+    min-height: 240px;
+    background: #181818;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+.carousel-wrapper {
+    flex: 1 1 0;
+}
+@media (max-width: 900px) {
+    .today-picks-row {
+        flex-direction: column;
+        gap: 1.2rem;
+    }
+    .top-reviewed-trailer {
+        max-width: 100%;
+        min-width: 0;
+        width: 100%;
+    }
+}
 
 #top-people {
     margin-bottom: 2.5rem;

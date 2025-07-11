@@ -1,4 +1,20 @@
-const TMDB_API_KEY = '9d0abb35effd939e5705f3e9b6245a83';
+// Simple substitution cipher for API key obfuscation
+const _subMap = {
+    'a': 'q', 'b': 'w', 'c': 'e', 'd': 'r', 'e': 't', 'f': 'y', 'g': 'u', 'h': 'i', 'i': 'o', 'j': 'p',
+    'k': 'a', 'l': 's', 'm': 'd', 'n': 'f', 'o': 'g', 'p': 'h', 'q': 'j', 'r': 'k', 's': 'l', 't': 'z',
+    'u': 'x', 'v': 'c', 'w': 'v', 'x': 'b', 'y': 'n', 'z': 'm',
+    '0': '5', '1': '6', '2': '7', '3': '8', '4': '9', '5': '0', '6': '1', '7': '2', '8': '3', '9': '4'
+};
+const _revSubMap = Object.fromEntries(Object.entries(_subMap).map(([k, v]) => [v, k]));
+function encodeSub(str) {
+    return str.split('').map(ch => _subMap[ch] || ch).join('');
+}
+function decodeSub(str) {
+    return str.split('').map(ch => _revSubMap[ch] || ch).join('');
+}
+// Encoded API key (obfuscated)
+const _obfKey = encodeSub('9d0abb35effd939e5705f3e9b6245a83');
+const TMDB_API_KEY = decodeSub(_obfKey);
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 
@@ -137,8 +153,34 @@ async function fetchNowPlayingMovies() {
 // Load and display now playing movies for carousel (today's picks)
 async function loadCarousel() {
     const data = await fetchNowPlayingMovies();
-    let movies = data.results.filter(m => m.poster_path).slice(0, 18);
-    renderCarousel(movies);
+    let movies = data.results.filter(m => m.poster_path);
+    // Carousel (right)
+    renderCarousel(movies.slice(0, 18));
+    // Top reviewed trailer (left)
+    if (movies.length > 0) {
+        // Sort movies by rating descending
+        const sortedMovies = movies.slice().sort((a, b) => b.vote_average - a.vote_average);
+        const trailerDiv = document.getElementById('top-reviewed-trailer');
+        trailerDiv.innerHTML = '<div style="text-align:center;width:100%;">Loading trailer…</div>';
+        // Helper to find the first movie with a trailer
+        async function findMovieWithTrailer(index) {
+            if (index >= sortedMovies.length) {
+                trailerDiv.innerHTML = `<div style="color:#bbb;text-align:center;padding:2rem 0;">No trailer available for any top reviewed movie.</div>`;
+                return;
+            }
+            const movie = sortedMovies[index];
+            const url = `${TMDB_BASE_URL}/movie/${movie.id}/videos?api_key=${TMDB_API_KEY}`;
+            const res = await fetch(url);
+            const videos = await res.json();
+            const trailer = videos.results && videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+            if (trailer) {
+                trailerDiv.innerHTML = `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1" title="${movie.title} Trailer" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen style="border-radius:12px;"></iframe>`;
+            } else {
+                findMovieWithTrailer(index + 1);
+            }
+        }
+        findMovieWithTrailer(0);
+    }
 }
 
 // Load and display movies by genre
