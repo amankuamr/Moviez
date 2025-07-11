@@ -37,9 +37,9 @@ async function fetchMoviesBySearch(query) {
     return res.json();
 }
 
-// Helper to fetch movie details
+// Helper to fetch movie details (with videos)
 async function fetchMovieDetails(movieId) {
-    const url = `${TMDB_BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&append_to_response=credits`;
+    const url = `${TMDB_BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&append_to_response=credits,videos`;
     const res = await fetch(url);
     return res.json();
 }
@@ -184,25 +184,25 @@ async function setupGenreFilters(genreMap) {
 
 // Setup filter bar (year, language)
 async function setupFilterBar() {
-    // Year dropdown (from 2024 to 1960)
+    // Year dropdown (from 1960 to current year, ascending)
     const yearSelect = document.getElementById('filter-year');
     const currentYear = new Date().getFullYear();
-    for (let y = currentYear; y >= 1960; y--) {
+    for (let y = 1960; y <= currentYear; y++) {
         const opt = document.createElement('option');
         opt.value = y;
         opt.textContent = y;
         yearSelect.appendChild(opt);
     }
-    // Language dropdown
+    // Language dropdown (A-Z)
     const langSelect = document.getElementById('filter-language');
-    const langs = await fetchLanguages();
+    let langs = await fetchLanguages();
+    langs = langs.filter(lang => lang.english_name && lang.iso_639_1);
+    langs.sort((a, b) => a.english_name.localeCompare(b.english_name));
     langs.forEach(lang => {
-        if (lang.english_name && lang.iso_639_1) {
-            const opt = document.createElement('option');
-            opt.value = lang.iso_639_1;
-            opt.textContent = lang.english_name;
-            langSelect.appendChild(opt);
-        }
+        const opt = document.createElement('option');
+        opt.value = lang.iso_639_1;
+        opt.textContent = lang.english_name;
+        langSelect.appendChild(opt);
     });
 }
 
@@ -346,25 +346,25 @@ function renderSeries(series, genreMap) {
 
 // Populate series filter bar
 async function setupSeriesFilterBar() {
-    // Year dropdown (from 2024 to 1960)
+    // Year dropdown (from 1960 to current year, ascending)
     const yearSelect = document.getElementById('series-filter-year');
     const currentYear = new Date().getFullYear();
-    for (let y = currentYear; y >= 1960; y--) {
+    for (let y = 1960; y <= currentYear; y++) {
         const opt = document.createElement('option');
         opt.value = y;
         opt.textContent = y;
         yearSelect.appendChild(opt);
     }
-    // Language dropdown
+    // Language dropdown (A-Z)
     const langSelect = document.getElementById('series-filter-language');
-    const langs = await fetchLanguages();
+    let langs = await fetchLanguages();
+    langs = langs.filter(lang => lang.english_name && lang.iso_639_1);
+    langs.sort((a, b) => a.english_name.localeCompare(b.english_name));
     langs.forEach(lang => {
-        if (lang.english_name && lang.iso_639_1) {
-            const opt = document.createElement('option');
-            opt.value = lang.iso_639_1;
-            opt.textContent = lang.english_name;
-            langSelect.appendChild(opt);
-        }
+        const opt = document.createElement('option');
+        opt.value = lang.iso_639_1;
+        opt.textContent = lang.english_name;
+        langSelect.appendChild(opt);
     });
 }
 
@@ -383,6 +383,59 @@ async function loadPopularSeries(genreMap, filters = {}) {
     renderSeries(series, genreMap);
 }
 
+// Fetch Hindi movies with filters
+async function fetchHindiMoviesWithFilters({ year, rating }) {
+    let url = `${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&sort_by=popularity.desc&with_original_language=hi`;
+    if (year) url += `&primary_release_year=${year}`;
+    if (rating) url += `&vote_average.gte=${rating}`;
+    const res = await fetch(url);
+    return res.json();
+}
+
+// Render Hindi movies
+function renderHindiMovies(movies, genreMap) {
+    const container = document.getElementById('hindi-list');
+    container.innerHTML = '';
+    if (!movies || movies.length === 0) {
+        container.innerHTML = '<p>No movies found.</p>';
+        return;
+    }
+    movies.forEach(movie => {
+        const card = document.createElement('div');
+        card.className = 'movie-card';
+        card.setAttribute('data-movie-id', movie.id);
+        const rating = movie.vote_average ? `<span class="movie-rating"><svg width="16" height="16" viewBox="0 0 24 24" fill="#ffb400" style="vertical-align:middle;"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg> ${movie.vote_average.toFixed(1)}</span>` : '';
+        const overview = movie.overview ? `<div class="movie-overview">${movie.overview.length > 90 ? movie.overview.slice(0, 90) + '…' : movie.overview}</div>` : '';
+        const genres = movie.genre_ids && genreMap ? movie.genre_ids.map(id => genreMap[id]).filter(Boolean) : [];
+        card.innerHTML = `
+            <span class="card-type-tag">Movie</span>
+            <img src="${movie.poster_path ? TMDB_IMAGE_BASE + movie.poster_path : 'https://via.placeholder.com/300x450?text=No+Image'}" alt="${movie.title}">
+            <div class="movie-title-row">
+                <div class="movie-title">${movie.title}</div>
+                ${rating}
+            </div>
+            <div class="movie-year">${movie.release_date ? movie.release_date.slice(0, 4) : ''}</div>
+            <div class="movie-genre">${genres.join(', ')}</div>
+            ${overview}
+        `;
+        card.addEventListener('click', () => openMovieModal(movie.id));
+        container.appendChild(card);
+    });
+}
+
+// Load and display popular Hindi movies
+async function loadPopularHindiMovies(genreMap, filters = {}) {
+    const container = document.getElementById('hindi-list');
+    showSkeletons(container);
+    const data = await fetchHindiMoviesWithFilters(filters);
+    let movies = data.results.slice(0, 10);
+    movies = movies.map(m => ({
+        ...m,
+        genre_names: m.genre_ids && genreMap ? m.genre_ids.map(id => genreMap[id]).filter(Boolean) : []
+    }));
+    renderHindiMovies(movies, genreMap);
+}
+
 // Modal logic
 function openMovieModal(movieId) {
     const modal = document.getElementById('movie-modal');
@@ -392,19 +445,54 @@ function openMovieModal(movieId) {
     fetchMovieDetails(movieId).then(movie => {
         const genres = movie.genres ? movie.genres.map(g => g.name).join(', ') : '';
         const cast = movie.credits && movie.credits.cast ? movie.credits.cast.slice(0, 5).map(c => c.name).join(', ') : '';
+        let videoEmbed = '';
+        let showPoster = true;
+        if (movie.videos && movie.videos.results && movie.videos.results.length > 0) {
+            const trailer = movie.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube') || movie.videos.results[0];
+            if (trailer && trailer.site === 'YouTube') {
+                videoEmbed = `<div class="modal-info" style="margin:1rem 0 0 0;"><iframe width="100%" height="315" src="https://www.youtube.com/embed/${trailer.key}" title="YouTube trailer" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`;
+                showPoster = false;
+            }
+        }
+        // Additional details
+        const budget = movie.budget ? `${movie.budget.toLocaleString()}` : 'N/A';
+        const revenue = movie.revenue ? `${movie.revenue.toLocaleString()}` : 'N/A';
+        const companies = movie.production_companies && movie.production_companies.length > 0
+            ? movie.production_companies.map(c => c.name).join(', ') : 'N/A';
+        const homepage = movie.homepage ? `<a href="${movie.homepage}" target="_blank" rel="noopener">Official Site</a>` : '';
+        const imdbLink = movie.imdb_id ? `https://www.imdb.com/title/${movie.imdb_id}` : '';
         modalBody.innerHTML = `
-            <div class="modal-poster">
+            <button class="close-modal" style="position:absolute;top:1.2rem;right:1.5rem;font-size:2.2rem;z-index:10;">&times;</button>
+            ${showPoster ? `<div class="modal-poster">
                 <img src="${movie.poster_path ? TMDB_IMAGE_BASE + movie.poster_path : 'https://via.placeholder.com/300x450?text=No+Image'}" alt="${movie.title}">
-            </div>
+            </div>` : videoEmbed}
             <div class="modal-details">
                 <h3>${movie.title} (${movie.release_date ? movie.release_date.slice(0, 4) : ''})</h3>
                 <div class="modal-info"><strong>Genres:</strong> ${genres}</div>
                 <div class="modal-info"><strong>Rating:</strong> ${movie.vote_average || 'N/A'} / 10</div>
                 <div class="modal-info"><strong>Runtime:</strong> ${movie.runtime ? movie.runtime + ' min' : 'N/A'}</div>
+                <div class="modal-info"><strong>Budget:</strong> ${budget}</div>
+                <div class="modal-info"><strong>Revenue:</strong> ${revenue}</div>
+                <div class="modal-info"><strong>Production:</strong> ${companies}</div>
                 <div class="modal-info"><strong>Cast:</strong> ${cast}</div>
+                <div class="modal-info">${homepage}</div>
+                ${imdbLink ? `<div class="modal-info"><button id="copy-imdb" data-link="${imdbLink}" style="padding:0.4rem 1.2rem;border-radius:8px;background:#ffb400;color:#181818;font-weight:700;cursor:pointer;">Copy IMDb Link</button></div>` : ''}
                 <div class="modal-overview">${movie.overview || ''}</div>
+                ${!showPoster ? '' : videoEmbed}
             </div>
         `;
+        // Add close button handler
+        modalBody.querySelector('.close-modal').onclick = closeMovieModal;
+        // Add copy IMDb handler
+        const copyBtn = modalBody.querySelector('#copy-imdb');
+        if (copyBtn) {
+            copyBtn.onclick = function() {
+                const link = copyBtn.getAttribute('data-link');
+                navigator.clipboard.writeText(link);
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => { copyBtn.textContent = 'Copy IMDb Link'; }, 1200);
+            };
+        }
     });
 }
 
@@ -425,6 +513,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     await loadAnimeBar();
     await setupSeriesFilterBar();
     await loadPopularSeries(genreMap);
+    await loadPopularHindiMovies(genreMap);
 
     // Series filter bar logic
     document.getElementById('series-filter-apply').addEventListener('click', async () => {
@@ -438,6 +527,28 @@ window.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('series-filter-rating').value = '';
         document.getElementById('series-filter-language').value = '';
         await loadPopularSeries(genreMap);
+    });
+
+    // Hindi filter bar logic
+    // Year dropdown (from 1960 to current year, ascending)
+    const hindiYearSelect = document.getElementById('hindi-filter-year');
+    const currentYear = new Date().getFullYear();
+    for (let y = 1960; y <= currentYear; y++) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        hindiYearSelect.appendChild(opt);
+    }
+    // Hindi filter apply
+    document.getElementById('hindi-filter-apply').addEventListener('click', async () => {
+        const year = document.getElementById('hindi-filter-year').value;
+        const rating = document.getElementById('hindi-filter-rating').value;
+        await loadPopularHindiMovies(genreMap, { year, rating });
+    });
+    document.getElementById('hindi-filter-clear').addEventListener('click', async () => {
+        document.getElementById('hindi-filter-year').value = '';
+        document.getElementById('hindi-filter-rating').value = '';
+        await loadPopularHindiMovies(genreMap);
     });
 
     // Set Drama as default active and load Drama movies

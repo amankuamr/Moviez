@@ -11,8 +11,7 @@
     <header>
         <div class="header-inner">
             <div class="logo-title">
-                <span class="logo-icon">🎬</span>
-                <span class="logo-text">Moviez</span>
+                <img class="logo-icon" src="images/logo-transparent.png" alt="Moviez Logo" />
             </div>
             <form id="search-form">
                 <div class="search-input-wrapper">
@@ -40,11 +39,11 @@
                 </select>
                 <select id="filter-rating">
                     <option value="">Min Rating</option>
-                    <option value="9">9+</option>
-                    <option value="8">8+</option>
-                    <option value="7">7+</option>
-                    <option value="6">6+</option>
                     <option value="5">5+</option>
+                    <option value="6">6+</option>
+                    <option value="7">7+</option>
+                    <option value="8">8+</option>
+                    <option value="9">9+</option>
                 </select>
                 <select id="filter-language">
                     <option value="">Language</option>
@@ -89,11 +88,11 @@
                 </select>
                 <select id="series-filter-rating">
                     <option value="">Min Rating</option>
-                    <option value="9">9+</option>
-                    <option value="8">8+</option>
-                    <option value="7">7+</option>
-                    <option value="6">6+</option>
                     <option value="5">5+</option>
+                    <option value="6">6+</option>
+                    <option value="7">7+</option>
+                    <option value="8">8+</option>
+                    <option value="9">9+</option>
                 </select>
                 <select id="series-filter-language">
                     <option value="">Language</option>
@@ -103,9 +102,44 @@
             </div>
             <div class="movie-list" id="series-list"></div>
         </section>
+        <section id="popular-hindi-movies">
+            <h2>Popular Hindi Movies</h2>
+            <div class="hindi-filter-bar filter-bar">
+                <select id="hindi-filter-year">
+                    <option value="">Year</option>
+                </select>
+                <select id="hindi-filter-rating">
+                    <option value="">Min Rating</option>
+                    <option value="5">5+</option>
+                    <option value="6">6+</option>
+                    <option value="7">7+</option>
+                    <option value="8">8+</option>
+                    <option value="9">9+</option>
+                </select>
+                <select id="hindi-filter-language">
+                    <option value="hi">Hindi</option>
+                </select>
+                <button id="hindi-filter-apply">Apply</button>
+                <button id="hindi-filter-clear" type="button">Clear</button>
+            </div>
+            <div class="movie-list" id="hindi-list"></div>
+        </section>
     </main>
     <footer>
-        <p>Made with ❤️ by Aman Kumar</p>
+        <div class="footer-inner">
+            <div class="footer-links">
+                <a href="#trending">Trending</a> |
+                <a href="#popular-series">Series</a> |
+                <a href="#popular-hindi-movies">Hindi Movies</a> |
+                <a href="#home-carousel">Today's Picks</a>
+            </div>
+            <div class="footer-social">
+                <a href="mailto:feedback@moviez.com" title="Send Feedback">Feedback</a> |
+                <a href="https://github.com/aman/moviez" target="_blank" rel="noopener">GitHub</a>
+            </div>
+            <button id="back-to-top" title="Back to Top">↑ Top</button>
+            <p>Made with ❤️ by Aman Kumar</p>
+        </div>
     </footer>
     <script src="app.js"></script>
 
@@ -116,5 +150,14 @@
             <div id="modal-body" class="modal-body-flex"></div>
         </div>
     </div>
+    <script>
+    // Back to Top button logic
+    document.addEventListener('DOMContentLoaded', function() {
+        var btn = document.getElementById('back-to-top');
+        btn.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    });
+    </script>
 </body>
 </html>
